@@ -3,8 +3,15 @@
 ## Examples
 
 ```javascript
-var scope = require('mongoscope-client')();
+require('mongoscope-client')();
+scope.find('local', 'startup_log', {query: {}, limit: 10, skip: 0}, function(err, res){
+  if(err) return console.error('Uhoh...', err);
+  console.log('find returned ->', res);
+})
+```
 
+```javascript
+var scope = require('mongoscope-client')();
 scope.deployments(function(err, deployments){
   console.log('scope is aware of ' + deployments.length + ' deployments:');
 
