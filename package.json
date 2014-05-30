@@ -9,9 +9,15 @@
     "type": "git",
     "url": "git://github.com/imlucas/mongoscope-client.git"
   },
+  "scripts": {
+    "dist": "mkdir -p dist && browserify ./bin/mongoscope-browser.js > dist/mongoscope.js"
+  },
   "dependencies": {
     "debug": "^0.8.1",
     "superagent": "^0.17.0",
     "mongodb-ns": "0.0.4"
+  },
+  "devDependencies": {
+    "browserify": "^4.1.6"
   }
 }
