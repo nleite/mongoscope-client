@@ -1,7 +1,7 @@
 # mongoscope-client
 
 ## Examples
-
+- [codepen collection](http://codepen.io/collection/Gdeok/)
 - [Running an aggregation](http://codepen.io/imlucas/pen/BHvLE)
 
 ```javascript
