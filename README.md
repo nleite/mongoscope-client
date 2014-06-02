@@ -2,6 +2,8 @@
 
 ## Examples
 
+- [Running an aggregation](http://codepen.io/imlucas/pen/BHvLE)
+
 ```javascript
 require('mongoscope-client')();
 scope.find('local', 'startup_log', {query: {}, limit: 10, skip: 0}, function(err, res){
