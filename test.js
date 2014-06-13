@@ -5,7 +5,7 @@ describe('client', function(){
   var client;
 
   it('should connect', function(done){
-    client = scope({scope: 'http://scope.mongodb.land'}).on('ready', function(){
+    client = scope({scope: 'http://scope.mongodb.land:80'}).on('ready', function(){
       done();
     }).on('error', done);
   });
@@ -75,17 +75,17 @@ describe('client', function(){
 
   it('should support aggregation');
 
-  describe.x('call url api', function(){
-    it('should return instance details', function(done){
-      client.call('instance', function(err, res){
+  describe('URL', function(){
+    it('should map /instance', function(done){
+      client.call('/instance', function(err, res){
         if(err) return done(err);
         assert(Array.isArray(res.database_names));
         done();
       });
     });
 
-    it('should have added a deployment', function(done){
-      client.call('deployments', function(err, res){
+    it('should map /deployments', function(done){
+      client.call('/deployments', function(err, res){
         if(err) return done(err);
 
         assert(res.length > 0);
@@ -93,7 +93,7 @@ describe('client', function(){
       });
     });
 
-    it('should return a full fetch of top', function(done){
+    it('should map /top', function(done){
       client.call('/top', function(err, res){
         if(err) return done(err);
 
@@ -102,7 +102,7 @@ describe('client', function(){
       });
     });
 
-    it('should return some logs', function(done){
+    it('should map /log', function(done){
       client.call('/log', function(err, res){
         if(err) return done(err);
 
@@ -111,8 +111,8 @@ describe('client', function(){
       });
     });
 
-    it('should return details for the local db', function(done){
-      client.call('/local', function(err, res){
+    it('should map /databases/:database', function(done){
+      client.call('/databases/local', function(err, res){
         if(err) return done(err);
 
         assert(res.collection_names.length > 0);
@@ -120,8 +120,8 @@ describe('client', function(){
       });
     });
 
-    it('should support low-level find', function(done){
-      client.call('/local/startup_log/find', function(err, res){
+    it('should map /databases/:database/collections/:collection/find', function(done){
+      client.call('/databases/local/collections/startup_log/find', function(err, res){
         if(err) return done(err);
 
         assert(Array.isArray(res));
@@ -130,8 +130,8 @@ describe('client', function(){
       });
     });
 
-    it('should support count', function(done){
-      client.call('/local/startup_log/count', function(err, res){
+    it('should map /databases/:database/collections/:collection/count', function(done){
+      client.call('/databases/local/collections/startup_log/count', function(err, res){
         if(err) return done(err);
 
         assert(res.count > 0, 'count returned ' + JSON.stringify(res));
