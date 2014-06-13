@@ -2,7 +2,7 @@ ui: mocha-bdd
 browsers:
   - name: chrome
     version: 30..latest
-  - name: ie
-    version: latest
+  # - name: ie
+  #   version: latest
   - name: iphone
     version: 6.1
