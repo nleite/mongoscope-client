@@ -4,7 +4,7 @@ var scope = require('./'),
 
 process.env.MONGOSCOPE = 'http://scope.mongodb.land';
 // process.env.MONGOSCOPE = 'http://localhost:29017';
-// require('debug').enable('mongoscope:client*');
+require('debug').enable('*');
 
 describe('client', function(){
   var client;
@@ -19,6 +19,12 @@ describe('client', function(){
       .on('readable', function(){
         done();
       });
+  });
+
+  it('should force port 80 if neccessary', function(){
+    if(process.env.MONGOSCOPE === 'http://scope.mongodb.land'){
+      assert.equal(client.config.scope, 'http://scope.mongodb.land:80');
+    }
   });
 
   it('should return instance details', function(done){
@@ -163,8 +169,17 @@ describe('client', function(){
     it('should have socketio connected', function(){
       assert(client.io.connected);
     });
+    it.skip('should be using websockets', function(){
+      var transport = client.io.io.engine.transport.name;
+      assert.equal(transport, 'websocket');
+    });
+    it('should not allow streaming count (for now)', function(){
+      assert.throws(function(){
+        client.count('local', 'startup_log');
+      }, new RegExp('is not streamable'));
+    });
 
-    it('should allow streaming top', function(done){
+    it('should allow streaming top #slow', function(done){
       client.top({interval: 10})
         .on('error', done)
         .on('data', function(data){
@@ -175,12 +190,6 @@ describe('client', function(){
 
           done();
         });
-    });
-
-    it('should not allow streaming count (for now)', function(){
-      assert.throws(function(){
-        client.count('local', 'startup_log');
-      }, new RegExp('is not streamable'));
     });
 
     it('should swap a stream seamlessly if when connect to another instance');
