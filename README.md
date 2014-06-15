@@ -14,6 +14,19 @@ scope.find('local', 'startup_log', {query: {}, limit: 10, skip: 0}, function(err
   if(err) return console.error('Uhoh...', err);
   console.log('find returned ->', res);
 })
+
+// How do I get all documents in a collection?
+var _ids = [];
+scope.find('local', 'startup_log')
+  .on('error', function(err){
+    console.error(err);
+  })
+  .on('data', function(doc){
+    _ids.push(doc._id);
+  })
+  .on('end', function(){
+    console.log('Found ' + _ids.length + ' log entries.');
+  });
 ```
 
 ```javascript

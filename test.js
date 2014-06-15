@@ -4,7 +4,7 @@ var scope = require('./'),
 
 process.env.MONGOSCOPE = 'http://scope.mongodb.land';
 // process.env.MONGOSCOPE = 'http://localhost:29017';
-require('debug').enable('*');
+require('debug').enable('mongoscope*');
 
 describe('client', function(){
   var client;
@@ -190,6 +190,25 @@ describe('client', function(){
 
           done();
         });
+    });
+
+    it('should have a working cursor', function(done){
+      var seen = 0, expected;
+      client.count('local', 'startup_log', function(err, res){
+        if(err) return done(err);
+        expected = res.count;
+
+        debug('should get back ' + expected + ' docs if cursor exhausted');
+        client.find('local', 'startup_log')
+          .on('error', done)
+          .on('data', function(){seen++;})
+          .on('end', function(){
+            debug('documents seen', seen);
+            assert.equal(seen, expected,
+              'Count says ' + expected + ' but only saw ' + seen);
+            done();
+          });
+      });
     });
 
     it('should swap a stream seamlessly if when connect to another instance');
