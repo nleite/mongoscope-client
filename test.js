@@ -1,13 +1,25 @@
 var scope = require('./'),
-  assert = require('assert');
+  assert = require('assert'),
+  debug = require('debug')('mongoscope:client:test');
+
+process.env.MONGOSCOPE = 'http://scope.mongodb.land';
+// process.env.MONGOSCOPE = 'http://localhost:29017';
+
+require('debug').enable('mongoscope:client*');
 
 describe('client', function(){
   var client;
 
+  after(function(done){
+    client.close();
+    done();
+  });
   it('should connect', function(done){
-    client = scope({scope: 'http://scope.mongodb.land:80'}).on('ready', function(){
-      done();
-    }).on('error', done);
+    client = scope({scope: process.env.MONGOSCOPE})
+      .on('error', done)
+      .on('readable', function(){
+        done();
+      });
   });
 
   it('should return instance details', function(done){
@@ -75,9 +87,9 @@ describe('client', function(){
 
   it('should support aggregation');
 
-  describe('URL', function(){
+  describe('Stateful API', function(){
     it('should map /instance', function(done){
-      client.call('/instance', function(err, res){
+      client.get('/instance', function(err, res){
         if(err) return done(err);
         assert(Array.isArray(res.database_names));
         done();
@@ -85,7 +97,7 @@ describe('client', function(){
     });
 
     it('should map /deployments', function(done){
-      client.call('/deployments', function(err, res){
+      client.get('/deployments', function(err, res){
         if(err) return done(err);
 
         assert(res.length > 0);
@@ -94,7 +106,7 @@ describe('client', function(){
     });
 
     it('should map /top', function(done){
-      client.call('/top', function(err, res){
+      client.get('/top', function(err, res){
         if(err) return done(err);
 
         assert(Array.isArray(res.namespaces));
@@ -103,7 +115,7 @@ describe('client', function(){
     });
 
     it('should map /log', function(done){
-      client.call('/log', function(err, res){
+      client.get('/log', function(err, res){
         if(err) return done(err);
 
         assert(Array.isArray(res));
@@ -112,7 +124,7 @@ describe('client', function(){
     });
 
     it('should map /databases/:database', function(done){
-      client.call('/databases/local', function(err, res){
+      client.get('/databases/local', function(err, res){
         if(err) return done(err);
 
         assert(res.collection_names.length > 0);
@@ -121,7 +133,7 @@ describe('client', function(){
     });
 
     it('should map /databases/:database/collections/:collection/find', function(done){
-      client.call('/databases/local/collections/startup_log/find', function(err, res){
+      client.get('/databases/local/collections/startup_log/find', function(err, res){
         if(err) return done(err);
 
         assert(Array.isArray(res));
@@ -131,7 +143,7 @@ describe('client', function(){
     });
 
     it('should map /databases/:database/collections/:collection/count', function(done){
-      client.call('/databases/local/collections/startup_log/count', function(err, res){
+      client.get('/databases/local/collections/startup_log/count', function(err, res){
         if(err) return done(err);
 
         assert(res.count > 0, 'count returned ' + JSON.stringify(res));
@@ -140,16 +152,45 @@ describe('client', function(){
     });
 
     it('should support aggregation');
+    describe('connect', function(){
+      it('should noop if we try to connect to the current seed');
+      it('should emit a change event if we connect to another instance');
+      it('should get a new token');
+      it('should dispose the previous token');
+    });
   });
-  describe('subscription', function(){
-    it.skip('should connect socketio', function(){
+
+  describe('streams', function(){
+    it('should have socketio connected', function(){
       assert(client.io.connected);
     });
-    it.skip('should get some top data', function(done){
-      client.subscribe('/top', function(){
-        console.log('got top data', arguments);
-        done();
-      });
+
+    it('should allow streaming top', function(done){
+      client.top({interval: 10})
+        .on('error', done)
+        .on('data', function(data){
+          debug('checking top sample', data);
+
+          assert(Array.isArray(data.namespaces));
+          assert(typeof data.deltas === 'object');
+
+          done();
+        });
     });
+
+    it('should not allow streaming count (for now)', function(){
+      assert.throws(function(){
+        client.count('local', 'startup_log');
+      }, new RegExp('is not streamable'));
+    });
+
+    it('should swap a stream seamlessly if when connect to another instance');
+  });
+
+  describe('MongoDB World', function(){
+    it('should create a stream for repl set status');
+    it('should create a stream for index stats');
+    it('should create a stream for operation stats');
+    it('should create a stream for network stats');
   });
 });
