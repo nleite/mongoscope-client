@@ -15,18 +15,22 @@ scope.find('local', 'startup_log', {query: {}, limit: 10, skip: 0}, function(err
   console.log('find returned ->', res);
 })
 
-// How do I get all documents in a collection?
-var _ids = [];
-scope.find('local', 'startup_log')
-  .on('error', function(err){
-    console.error(err);
-  })
-  .on('data', function(doc){
-    _ids.push(doc._id);
-  })
-  .on('end', function(){
-    console.log('Found ' + _ids.length + ' log entries.');
-  });
+// How do I get all documents in a collection in backbone.js?
+var Tickets = Backbone.Collection.extend(Backbone.extend({
+  url: '/jiraXgen/tickets'
+}, scope.backbone.List));
+
+// Add the `all` option when fetching to exhaust a cursor before
+// adding models to a collection.
+var tickets = new Tickets();
+tickets.on('sync', function(){
+  var data = tickets.toJSON();
+  console.log('Tickets', tickets);
+});
+tickets.fetch({all: true});
+
+// You can also pass the usual mongo find options as well
+tickets.fetch({query: {}, limit: 10, skip: 0});
 ```
 
 ```javascript
