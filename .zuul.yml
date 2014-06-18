@@ -4,5 +4,5 @@ browsers:
     version: 30..latest
   # - name: ie
   #   version: latest
-  # - name: iphone
-  #   version: 6.1
+  - name: iphone
+    version: 6.1
