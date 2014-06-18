@@ -188,6 +188,52 @@ describe('client', function(){
       });
     });
 
+    describe('analytics', function(){
+      it('should error in client if not a valid group');
+      it('should support durability', function(done){
+        client.analytics('durability', function(err, res){
+          if(err) return done(err);
+          debug('durability analytics', res);
+          done();
+        });
+      });
+      it('should support operations', function(done){
+        client.analytics('operations', function(err, res){
+          if(err) return done(err);
+          debug('operations analytics', res);
+          done();
+        });
+      });
+      it('should support memory', function(done){
+        client.analytics('memory', function(err, res){
+          if(err) return done(err);
+          debug('memory analytics', res);
+          done();
+        });
+      });
+      it('should support replication', function(done){
+        client.analytics('replication', function(err, res){
+          if(err) return done(err);
+          debug('replication analytics', res);
+          done();
+        });
+      });
+      it('should support network', function(done){
+        client.analytics('network', function(err, res){
+          if(err) return done(err);
+          debug('network analytics', res);
+          done();
+        });
+      });
+      it('should support indexes', function(done){
+        client.analytics('indexes', function(err, res){
+          if(err) return done(err);
+          debug('indexes analytics', res);
+          done();
+        });
+      });
+    });
+
     describe('connect', function(){
       it('should noop if we try to connect to the current seed');
       it('should emit a change event if we connect to another instance');
@@ -243,12 +289,5 @@ describe('client', function(){
     });
 
     it('should swap a stream seamlessly if when connect to another instance');
-  });
-
-  describe('MongoDB World', function(){
-    it('should create a stream for repl set status');
-    it('should create a stream for index stats');
-    it('should create a stream for operation stats');
-    it('should create a stream for network stats');
   });
 });
