@@ -45,6 +45,14 @@ describe('client', function(){
     });
   });
 
+  it('should return the schema prototype', function(done){
+    client.schema('local', 'startup_log', function(err, res){
+      if(err) return done(err);
+      debug('schema', res.body);
+      done();
+    });
+  });
+
   it('should return a full fetch of top', function(done){
     client.top(function(err, res){
       if(err) return done(err);
