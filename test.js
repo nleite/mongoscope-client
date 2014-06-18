@@ -156,7 +156,24 @@ describe('client', function(){
       });
     });
 
-    it('should support aggregation');
+    it('should support aggregation', function(done){
+      client.aggregate('local', 'startup_log', [{
+          $group: {
+            _id : {
+              pid : "$pid"
+            },
+            count: {$sum: 1}
+          }
+        }, {
+          $sort: {
+            count: -1
+          }
+        }], function(err, res){
+          if(err) return done(err);
+          assert(res.length > 1);
+          done();
+        });
+    });
     describe('connect', function(){
       it('should noop if we try to connect to the current seed');
       it('should emit a change event if we connect to another instance');
