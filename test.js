@@ -346,8 +346,6 @@ describe('Adapter', function(){
           assert.equal(response_200.mongodb, 'localhost:27017');
           assert.equal(response_200.url,
             '/databases/scope_stat/collections/counters.status_code.200_10');
-          // assert(Array.isArray(res));
-          // assert.equal(res.length, 1);
           done();
         }});
       });
