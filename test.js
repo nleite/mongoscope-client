@@ -174,6 +174,20 @@ describe('client', function(){
           done();
         });
     });
+
+    it('should return error for working set not functioning', function(done){
+      client.workingSet(function(err, res){
+        if(err){
+          if(/nodejs driver did not return workingSet/.test(err.message)){
+            return done();
+          }
+          return done();
+        }
+        debug('working set size', res);
+        done(new Error('Was not expecting this to work! ' + JSON.stringify(res, null, 2)));
+      });
+    });
+
     describe('connect', function(){
       it('should noop if we try to connect to the current seed');
       it('should emit a change event if we connect to another instance');
