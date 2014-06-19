@@ -2,8 +2,8 @@ var scope = require('./'),
   assert = require('assert'),
   debug = require('debug')('mongoscope:client:test');
 
-process.env.MONGOSCOPE = 'http://scope.mongodb.land';
-// process.env.MONGOSCOPE = 'http://localhost:29017';
+// process.env.MONGOSCOPE = 'http://scope.mongodb.land';
+process.env.MONGOSCOPE = 'http://localhost:29017';
 // require('debug').enable('mongoscope*');
 
 describe('client', function(){
@@ -45,11 +45,36 @@ describe('client', function(){
     });
   });
 
-  it('should return the schema prototype', function(done){
-    client.schema('local', 'startup_log', function(err, res){
-      if(err) return done(err);
-      debug('schema', res.body);
-      done();
+  describe('Prototypes', function(){
+    it('should return the schema', function(done){
+      client.schema('local', 'startup_log', function(err, res){
+        if(err) return done(err);
+        debug('schema', res.body);
+        done();
+      });
+    });
+
+    it('should return a unique sample of the collection', function(done){
+      client.sample('local', 'startup_log', {size: 5}, function(err, res){
+        if(err) return done(err);
+
+        var set = {},
+          ids = res.map(function(d){
+            set[d._id] = true;
+            return d._id;
+          });
+        assert.equal(Object.keys(ids).length, ids.length, 'Returned non-uniques');
+        done();
+      });
+    });
+
+    it('should return a random document', function(done){
+      client.random('local', 'startup_log', function(err, res){
+        if(err) return done(err);
+        assert(!Array.isArray(res));
+        assert(res._id);
+        done();
+      });
     });
   });
 
