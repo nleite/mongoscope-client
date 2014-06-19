@@ -29,6 +29,7 @@
     "gulp": "^3.8.1",
     "gulp-rename": "^1.2.0",
     "vinyl-source-stream": "^0.1.1",
-    "github-release": "0.0.1"
+    "github-release": "^0.0.2",
+    "ecstatic": "^0.5.3"
   }
 }
