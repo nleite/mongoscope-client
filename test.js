@@ -2,8 +2,8 @@ var scope = require('./'),
   assert = require('assert'),
   debug = require('debug')('mongoscope:client:test');
 
-// process.env.MONGOSCOPE = 'http://scope.mongodb.land';
-process.env.MONGOSCOPE = 'http://localhost:29017';
+process.env.MONGOSCOPE = 'http://scope.mongodb.land';
+// process.env.MONGOSCOPE = 'http://localhost:29017';
 // require('debug').enable('mongoscope*');
 
 describe('client', function(){
