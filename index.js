@@ -1,4 +1,5 @@
-var Client = require('./lib/client');
+var Client = require('./lib/client'),
+  pkg = require('./package.json');
 
 module.exports = function(config){
   config = config || {};
@@ -15,3 +16,5 @@ module.exports = function(config){
 
   return new Client(config);
 };
+
+module.exports.version = pkg.version;
