@@ -6,8 +6,8 @@ var mackbone, client,
   $ = window.jQuery;
 
 client = window.mongoscope({
-  // scope: 'http://scope.mongodb.land'
-  scope: 'http://localhost:29017'
+  scope: 'http://scope.mongodb.land'
+  // scope: 'http://localhost:29017'
 })
   .on('readable', function(){
     mackbone = client.backbone;

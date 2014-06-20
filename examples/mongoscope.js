@@ -4,8 +4,6 @@ window.mongoscope = require('../');
 },{"../":2}],2:[function(require,module,exports){
 var Client = require('./lib/client');
 
-require('debug').enable('mon*');
-
 module.exports = function(config){
   config = config || {};
   if(typeof config !== 'object'){
@@ -22,7 +20,7 @@ module.exports = function(config){
   return new Client(config);
 };
 
-},{"./lib/client":4,"debug":35}],3:[function(require,module,exports){
+},{"./lib/client":4}],3:[function(require,module,exports){
 var Client = require('../client'),
   assert = require('assert'),
   types = {
@@ -120,6 +118,8 @@ function sync(method, attrs, options){
     }
   });
 
+  debug('doing sync', url, params, ender);
+
   if(!options.all) return client.get(url, params, ender);
 
   var docs = [];
@@ -146,12 +146,7 @@ module.exports.Collection = {
 
 module.exports.ReadableStream = {
   subscription: null,
-
   subscribe: function(){
-    if(this.subscription){
-      throw new Error('wtf?');
-    }
-
     var resource = this,
       client = use(resource),
       url = (typeof resource.url === 'function') ? resource.url() : resource.url;
@@ -167,7 +162,6 @@ module.exports.ReadableStream = {
 
     // If the client context changes, move our subscription.
     this.subscription.client.on('change', function(){
-      debugger;
       this.unsubscribe();
       this.subscribe();
     }.bind(this));
@@ -13501,7 +13495,7 @@ module.exports = function(arr, fn, initial){
 module.exports={
   "name": "mongoscope-client",
   "description": "shush",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "author": "Lucas Hrabovsky <hrabovsky.lucas@gmail.com> (http://imlucas.com)",
   "license": "MIT",
   "homepage": "http://github.com/imlucas/mongoscope-client",
@@ -13510,6 +13504,7 @@ module.exports={
     "url": "git://github.com/imlucas/mongoscope-client.git"
   },
   "scripts": {
+    "start": "gulp serve",
     "dist": "gulp dist",
     "test": "zuul --local 8080 -- test.js",
     "ci": "zuul -- test.js"

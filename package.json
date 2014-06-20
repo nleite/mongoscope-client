@@ -10,6 +10,7 @@
     "url": "git://github.com/imlucas/mongoscope-client.git"
   },
   "scripts": {
+    "start": "gulp serve",
     "dist": "gulp dist",
     "test": "zuul --local 8080 -- test.js",
     "ci": "zuul -- test.js"
