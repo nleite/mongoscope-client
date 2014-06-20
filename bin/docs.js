@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var dox = require('dox'),
   fs = require('fs');
 
