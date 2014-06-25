@@ -1,83 +1,65 @@
-var mackbone, client,
-  Model, Collection,
-  ModelStream, CollectionStream,
-  Backbone = window.Backbone,
-  _ = window._,
-  $ = window.jQuery;
+// mongoscope is running in demo mode at http://scope.mongodb.land
+// and has a standalone deployment running on it.  
+// One instance could potentially be part of a much larger deployment
+// from which mongoscope will automatically discover all members,
+// which is why we refer to it as the seed.
+var scope = window.mongoscope({
+  scope: 'http://scope.mongodb.land',
+  seed: 'localhost:27017'
+});
 
-client = window.mongoscope({
-  scope: 'http://scope.mongodb.land'
-  // scope: 'http://localhost:29017'
-})
-  .on('readable', function(){
-    mackbone = client.backbone;
+// Extend Backbone's default Model and Collection to use mongoscope
+// client calls as the data provider for reads.
+var Collection = Backbone.Collection.extend(scope.backbone.Collection);
+var Model = Backbone.Model.extend(scope.backbone.Model);
 
-    Collection = Backbone.Collection.extend(mackbone.Collection);
-    Model = Backbone.Model.extend(mackbone.Model);
+// For consuming real-time data via socket.io, extend ReadableStream.
+var CollectionStream = Collection.extend(scope.backbone.ReadableStream);
 
-    CollectionStream = Collection.extend(mackbone.ReadableStream);
-    ModelStream = Model.extend(mackbone.ReadableStream);
-    example();
-  });
+// A model for getting details about a mongodb instance, eg hostInfo, 
+// serverInfo, listDatabases, etc.
+var Instance = Model.extend({url: '/instance'});
 
-function example(){
-  // Extending from mongoscope's backbone adapter sure is nice and sweet...
-  var Instance = Model.extend({url: '/instance'});
+// Even better, let's make a collection that will tail the log
+// of our instance and stream us back structured log lines
+// thanks to [mongodb-log](http://github.com/imlucas/mongodb-log).
+var LogStream = CollectionStream.extend({
+  url: '/log', model: Model.extend({})
+});
 
-
-  var LogStream = CollectionStream.extend({
-    url: '/log',
-    model: Model.extend({
-      idAttribute: function(){
-        return this.get('timestamp') + this.get('message');
-      },
-      defaults: {
-        threadname: 'default',
-        message: 'Some MongoDB log message',
-        timestamp: new Date()
-      }
-    })
-  });
-
+// Now that we have a model and collection, let's make a View to utilize them.
+// Let's say you want to display a tail of the log and some diagnostics 
+// about the instance.
 var InstanceLogView = Backbone.View.extend({
-  initialize: function(){
-    this.instance = new Instance();
-    this.instance.on('sync', this.insert, this);
-
-    this.logs = new LogStream();
-    this.logs.on('sync', this.update, this);
-
-    this.$logLines = null;
-  },
+  // The underscore.js template for our page.
   tpl: _.template($('#instance-tpl').html()),
-  enter: function(){
-    // We navigated to this view, so get data from the backend.
+  initialize: function(){
+    this.logs = new LogStream();
+
+    // Get instance details and call `onInstanceInfo` to render them.
+    this.instance = new Instance().on('sync', this.onInstanceInfo, this);
     this.instance.fetch();
-    return this;
   },
-  insert: function(){
-    // Set the initial DOM.
+  // We got back the instance info so let's render that with our template.
+  onInstanceInfo: function(){
     this.$el.html(this.tpl({
       instance: this.instance.toJSON(),
       logs: this.logs.toJSON()
     }));
 
-    this.$logLines = this.$el.find('.log-lines');
+    // Now that we have a div to render log lines into,
+    // listen for log updates and call `onLogData` to render them.
+    this.logs.on('sync', this.onLogData, this);
     this.logs.subscribe();
-    return this;
   },
-  update: function(collection, freshLogs){
-    // Update dom with your fresh log lines.
-    this.$el.find('.log-lines').prepend(freshLogs.map(function(line){
+  // Add new log messages to the bottom of the div with 
+  // the `log-lines` class.
+  onLogData: function(collection, freshLogs){
+    this.$el.find('.log-lines').append(freshLogs.map(function(line){
       return line.message;
     }).join('<br />'));
-  },
-  exit: function(){
-    // Navigating away so be nice and close the log stream.
-    this.logs.unsunscribe();
-    return this;
   }
 });
- new InstanceLogView({el: '.instance-logs'}).enter();
 
-}
+// Now we just instantiate the view and you're tailing the logs.
+new InstanceLogView({el: '.instance-logs'});
