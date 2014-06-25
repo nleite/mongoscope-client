@@ -9,6 +9,10 @@
     "type": "git",
     "url": "git://github.com/imlucas/mongoscope-client.git"
   },
+  "keywords": [
+    "mongoscope",
+    "mongodb.js"
+  ],
   "scripts": {
     "start": "gulp serve",
     "dist": "gulp dist",
