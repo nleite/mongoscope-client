@@ -158,10 +158,42 @@ describe('client', function(){
     });
   });
   describe('Documents', function(){
-    it('should create a new one');
-    it('should return details for one');
+    var doc = {
+      _id: Date.now(),
+      name: 'Document Create',
+      project: 'mongoscope-client'
+    };
+
+    it('should create a new one', function(done){
+      client.createDocument('test', 'scopes', doc, function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(raw.status, 201);
+        done();
+      });
+    });
+
+    // it('should return details for one', function(done){
+    //   client.getDocument('test', 'scopes', doc._id, function(err, res){
+    //     assert.ifError(err);
+    //     assert.deepEqual(res, doc);
+    //     done();
+    //   });
+    // });
+
     it('should update one');
-    it('should destroy one');
+    // it('should destroy one', function(done){
+    //   client.destroyDocument('test', 'scopes', doc._id, function(err, res, raw){
+    //     assert.ifError(err);
+    //     assert.equal(raw.status, 200);
+    //     done();
+    //   });
+    // });
+    it('should return a 404 for the old document', function(done){
+      client.getDocument('test', 'scopes', doc._id, function(err){
+        assert.equal(err.status, 404);
+        done();
+      });
+    });
   });
   describe('Router', function(){
     it('has the route /instance', function(done){
