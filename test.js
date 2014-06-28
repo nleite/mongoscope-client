@@ -46,14 +46,6 @@ describe('client', function(){
   });
 
   describe('Prototypes', function(){
-    it('should return the schema', function(done){
-      client.schema('local', 'startup_log', function(err, res){
-        if(err) return done(err);
-        debug('schema', res.body);
-        done();
-      });
-    });
-
     it('should return a unique sample of the collection', function(done){
       client.sample('local', 'startup_log', {size: 5}, function(err, res){
         if(err) return done(err);
