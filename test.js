@@ -34,7 +34,7 @@ describe('client', function(){
 
   it('should return instance details', function(done){
     client.instance(function(err, res){
-      if(err) return done(err);
+      assert.ifError(err);
       assert(Array.isArray(res.database_names));
       done();
     });
@@ -42,7 +42,7 @@ describe('client', function(){
 
   it('should have added a deployment', function(done){
     client.deployments(function(err, res){
-      if(err) return done(err);
+      assert.ifError(err);
 
       assert(res.length > 0);
       done();
@@ -52,7 +52,7 @@ describe('client', function(){
   describe('Prototypes', function(){
     it('should return a unique sample of the collection', function(done){
       client.sample('local', 'startup_log', {size: 5}, function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         var set = {},
           ids = res.map(function(d){
@@ -66,7 +66,7 @@ describe('client', function(){
 
     it('should return a random document', function(done){
       client.random('local', 'startup_log', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
         assert(!Array.isArray(res));
         assert(res._id);
         done();
@@ -76,7 +76,7 @@ describe('client', function(){
 
   it('should return a full fetch of top', function(done){
     client.top(function(err, res){
-      if(err) return done(err);
+      assert.ifError(err);
 
       assert(Array.isArray(res.namespaces));
       done();
@@ -85,45 +85,88 @@ describe('client', function(){
 
   it('should return some logs', function(done){
     client.log(function(err, res){
-      if(err) return done(err);
+      assert.ifError(err);
 
       assert(Array.isArray(res));
       done();
     });
   });
 
-  it('should return details for the local db', function(done){
-    client.database('local', function(err, res){
-      if(err) return done(err);
+  describe('Databases', function(){
+    it('should return details for the local db', function(done){
+      client.database('local', function(err, res){
+        assert.ifError(err);
 
-      assert(res.collection_names.length > 0);
-      done();
+        assert(res.collection_names.length > 0);
+        done();
+      });
+    });
+    it('should create a new one');
+    it('should destroy one');
+  });
+  describe('Collections', function(){
+    it('should support low-level find', function(done){
+      client.find('local', 'startup_log', function(err, res){
+        assert.ifError(err);
+
+        assert(Array.isArray(res));
+        assert(res.length > 0);
+        done();
+      });
+    });
+
+    it('should support count', function(done){
+      client.count('local', 'startup_log', function(err, res){
+        assert.ifError(err);
+
+        assert(res.count > 0, 'count returned ' + JSON.stringify(res));
+        done();
+      });
+    });
+    it('should create a new one');
+    it('should destroy one');
+  });
+  describe('Indexes', function(){
+    it('should create a new index', function(done){
+      client.createIndex('local', 'startup_log', {hostname: 1}, function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(raw.status, 201);
+        done();
+      });
+    });
+    it('should update the name option', function(done){
+      client.updateIndex('local', 'startup_log', 'hostname_1', {name: 'hostname'}, function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(raw.status, 200);
+        assert.equal(res.name, 'hostname');
+        done();
+      });
+    });
+    it('should destroy one', function(done){
+      client.destroyIndex('local', 'startup_log', 'hostname', function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(raw.status, 200);
+        assert.equal(res.name, 'hostname');
+        done();
+      });
+    });
+    it('should now return a 404 for our old index', function(done){
+      client.getIndex('local', 'startup_log', 'hostname', function(err){
+        assert.equal(err.status, 404);
+        done();
+      });
     });
   });
-
-  it('should support low-level find', function(done){
-    client.find('local', 'startup_log', function(err, res){
-      if(err) return done(err);
-
-      assert(Array.isArray(res));
-      assert(res.length > 0);
-      done();
-    });
+  describe('Documents', function(){
+    it('should create a new one');
+    it('should return details for one');
+    it('should update one');
+    it('should destroy one');
   });
-
-  it('should support count', function(done){
-    client.count('local', 'startup_log', function(err, res){
-      if(err) return done(err);
-
-      assert(res.count > 0, 'count returned ' + JSON.stringify(res));
-      done();
-    });
-  });
-
   describe('Router', function(){
     it('has the route /instance', function(done){
       client.get('/instance', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
         assert(Array.isArray(res.database_names));
         done();
       });
@@ -131,7 +174,7 @@ describe('client', function(){
 
     it('has the route /deployments', function(done){
       client.get('/deployments', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(res.length > 0);
         done();
@@ -140,7 +183,7 @@ describe('client', function(){
 
     it('has the route /top', function(done){
       client.get('/top', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(Array.isArray(res.namespaces));
         done();
@@ -149,7 +192,7 @@ describe('client', function(){
 
     it('has the route /log', function(done){
       client.get('/log', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(Array.isArray(res));
         done();
@@ -158,7 +201,7 @@ describe('client', function(){
 
     it('has the route /databases/:database', function(done){
       client.get('/databases/local', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(res.collection_names.length > 0);
         done();
@@ -167,7 +210,7 @@ describe('client', function(){
 
     it('has the route /databases/:database/collections/:collection/find', function(done){
       client.get('/databases/local/collections/startup_log/find', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(Array.isArray(res));
         assert(res.length > 0);
@@ -177,7 +220,7 @@ describe('client', function(){
 
     it('has the route /databases/:database/collections/:collection/count', function(done){
       client.get('/databases/local/collections/startup_log/count', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
 
         assert(res.count > 0, 'count returned ' + JSON.stringify(res));
         done();
@@ -197,7 +240,7 @@ describe('client', function(){
             count: -1
           }
         }], function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           assert(res.length > 1);
           done();
         });
@@ -224,42 +267,42 @@ describe('client', function(){
       });
       it('should support durability', function(done){
         client.analytics('durability', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('durability analytics', res);
           done();
         });
       });
       it('should support operations', function(done){
         client.analytics('operations', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('operations analytics', res);
           done();
         });
       });
       it('should support memory', function(done){
         client.analytics('memory', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('memory analytics', res);
           done();
         });
       });
       it('should support replication', function(done){
         client.analytics('replication', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('replication analytics', res);
           done();
         });
       });
       it('should support network', function(done){
         client.analytics('network', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('network analytics', res);
           done();
         });
       });
       it('should support indexes', function(done){
         client.analytics('indexes', function(err, res){
-          if(err) return done(err);
+          assert.ifError(err);
           debug('indexes analytics', res);
           done();
         });
@@ -279,13 +322,13 @@ describe('client', function(){
     it('should not allow streaming count (for now)', function(){
       assert.throws(function(){
         client.count('local', 'startup_log');
-      }, new RegExp('is not streamable'));
+      }, new RegExp('not streamable'));
     });
 
     it('should have a working cursor', function(done){
       var seen = 0, expected;
       client.count('local', 'startup_log', function(err, res){
-        if(err) return done(err);
+        assert.ifError(err);
         expected = res.count;
 
         debug('should get back ' + expected + ' docs if cursor exhausted');
