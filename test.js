@@ -105,26 +105,109 @@ describe('client', function(){
     it('should destroy one');
   });
   describe('Collections', function(){
-    it('should support low-level find', function(done){
-      client.find('local', 'startup_log', function(err, res){
-        assert.ifError(err);
+    describe('Features', function(){
+      it('should support low-level find', function(done){
+        client.find('local', 'startup_log', function(err, res){
+          assert.ifError(err);
 
-        assert(Array.isArray(res));
-        assert(res.length > 0);
-        done();
+          assert(Array.isArray(res));
+          assert(res.length > 0);
+          done();
+        });
+      });
+      it('should support count', function(done){
+        client.count('local', 'startup_log', function(err, res){
+          assert.ifError(err);
+
+          assert(res.count > 0, 'count returned ' + JSON.stringify(res));
+          done();
+        });
       });
     });
-
-    it('should support count', function(done){
-      client.count('local', 'startup_log', function(err, res){
-        assert.ifError(err);
-
-        assert(res.count > 0, 'count returned ' + JSON.stringify(res));
-        done();
+    describe('CRUD', function(){
+      before(function(done){
+        client.destroyCollection('test', 'original_name', function(){
+          done();
+        });
+      });
+      it('should not allow invalid collection names', function(done){
+        client.createCollection('test', 'awe $ome collection times!', function(err, res){
+          assert(err, 'Should be an error: ' + res.text);
+          assert.equal(err.status, 400);
+          done();
+        });
+      });
+      it('should create a new one', function(done){
+        client.createCollection('test', 'original_name', function(err, res){
+          assert.ifError(err);
+          assert.equal(res.name, 'original_name');
+          done();
+        });
+      });
+      it('should conflict if trying to create again', function(done){
+        client.createCollection('test', 'original_name', function(err, res){
+          assert(err, 'Should be an error: ' + res.text);
+          assert.equal(err.status, 409);
+          done();
+        });
+      });
+      it('should rename it', function(done){
+        client.updateCollection('test', 'original_name', {name: 'renamed'}, function(err, res){
+          assert.ifError(err);
+          assert.equal(res.name, 'renamed');
+          done();
+        });
+      });
+      it('should now return a 404 for the original', function(done){
+        client.collection('test', 'original_name', function(err, res){
+          assert(err, 'Should be an error: ' + res.text);
+          assert.equal(err.status, 404, 'Got message: ' + err.message);
+          done();
+        });
+      });
+      it('should destroy one', function(done){
+        client.destroyCollection('test', 'renamed', function(err, res){
+          assert.ifError(err);
+          assert.equal(res.name, 'renamed');
+          done();
+        });
+      });
+      it('should 404 for the renamed collection', function(done){
+        client.collection('test', 'renamed', function(err, res){
+          assert(err, 'Should be an error: ' + res.text);
+          assert.equal(err.status, 404);
+          done();
+        });
       });
     });
-    it('should create a new one');
-    it('should destroy one');
+    describe('Capped', function(){
+      it('should not allow size AND max for capped collections', function(done){
+        client.createCollection('test', 'cappy', {capped: true, max: 1024, size: 100}, function(err, res){
+          assert(err, 'Should be an error: ' + res.text);
+          assert.equal(err.status, 400);
+          done();
+        });
+      });
+      it('should create a capped collection', function(done){
+        client.createCollection('test', 'cappy', {capped: true, max: 10}, function(err){
+          assert.ifError(err);
+          done();
+        });
+      });
+      it('should be marked as capped by max 10', function(done){
+        client.collection('test', 'cappy', function(err, res){
+          assert.ifError(err);
+          assert(res.features.capped);
+          assert.equal(res.features.max, 10);
+          done();
+        });
+      });
+      after(function(done){
+        client.destroyCollection('test', 'cappy', function(){
+          done();
+        });
+      });
+    });
   });
   describe('Indexes', function(){
     it('should create a new index', function(done){
@@ -151,7 +234,7 @@ describe('client', function(){
       });
     });
     it('should now return a 404 for our old index', function(done){
-      client.getIndex('local', 'startup_log', 'hostname', function(err){
+      client.index('local', 'startup_log', 'hostname', function(err){
         assert.equal(err.status, 404);
         done();
       });
@@ -453,12 +536,14 @@ describe('Adapter', function(){
           mongodb: 'localhost:27017/scope_stat.counters.status_code.200_10'
         });
         var response_200 = new SuccessfulResponses();
-        response_200.fetch({limit: 1, error: done, success: function(){
+
+        function check(){
           assert.equal(response_200.mongodb, 'localhost:27017');
           assert.equal(response_200.url,
             '/databases/scope_stat/collections/counters.status_code.200_10');
           done();
-        }});
+        }
+        response_200.fetch({limit: 1, error: check, success: check});
       });
 
       it('should fetch all', function(done){
