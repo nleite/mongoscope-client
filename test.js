@@ -101,8 +101,18 @@ describe('client', function(){
         done();
       });
     });
-    it('should create a new one');
-    it('should destroy one');
+    it('should create a new one', function(done){
+      client.createCollection('test_db', 'nodbwithoutacollection', function(err){
+        assert.ifError(err);
+        done();
+      });
+    });
+    it('should destroy one', function(done){
+      client.destroyDatabase('test_db', function(err){
+        assert.ifError(err);
+        done();
+      });
+    });
   });
   describe('Collections', function(){
     describe('Features', function(){
