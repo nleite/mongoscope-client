@@ -172,22 +172,29 @@ describe('client', function(){
       });
     });
 
-    // it('should return details for one', function(done){
-    //   client.getDocument('test', 'scopes', doc._id, function(err, res){
-    //     assert.ifError(err);
-    //     assert.deepEqual(res, doc);
-    //     done();
-    //   });
-    // });
+    it('should return details for one', function(done){
+      client.getDocument('test', 'scopes', doc._id, function(err, res){
+        assert.ifError(err);
+        assert.deepEqual(res, doc);
+        done();
+      });
+    });
 
-    it('should update one');
-    // it('should destroy one', function(done){
-    //   client.destroyDocument('test', 'scopes', doc._id, function(err, res, raw){
-    //     assert.ifError(err);
-    //     assert.equal(raw.status, 200);
-    //     done();
-    //   });
-    // });
+    it('should update one', function(done){
+      client.updateDocument('test', 'scopes', doc._id, {$inc: {updates: 1}}, function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(200, raw.status);
+        done();
+      });
+    });
+
+    it('should destroy one', function(done){
+      client.destroyDocument('test', 'scopes', doc._id, function(err, res, raw){
+        assert.ifError(err);
+        assert.equal(raw.status, 200);
+        done();
+      });
+    });
     it('should return a 404 for the old document', function(done){
       client.getDocument('test', 'scopes', doc._id, function(err){
         assert.equal(err.status, 404);
