@@ -1,9 +1,10 @@
 var assert = require('assert'),
   helpers = require('./helpers');
 
-describe.skip('Collection', function(){
+describe('Collection', function(){
   before(helpers.before);
   after(helpers.after);
+
   describe('Features', function(){
     it('should support low-level find', function(done){
       helpers.client.find('local.startup_log', function(err, res){
@@ -50,9 +51,8 @@ describe.skip('Collection', function(){
       });
     });
     it('should not allow invalid collection names', function(done){
-      helpers.client.createCollection('test.awe $ome collection times!', function(err, res){
-        assert(err, 'Should be an error: ' + res.text);
-        assert.equal(err.status, 400);
+      helpers.client.createCollection('test.awe $ome collection times!', function(err){
+        assert(err, 'Should be a client side validation error');
         done();
       });
     });
@@ -128,8 +128,8 @@ describe.skip('Collection', function(){
       });
     });
     after(function(done){
-      helpers.client.destroyCollection('test.cappy', function(){
-        done();
+      helpers.client.destroyCollection('test.cappy', function(err){
+        done(err);
       });
     });
   });

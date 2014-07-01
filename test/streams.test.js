@@ -5,10 +5,6 @@ describe('Streams', function(){
   before(helpers.before);
   after(helpers.after);
 
-  it.skip('should have socketio connected', function(){
-    assert(helpers.client.io.connected);
-  });
-
   it('should be using websockets or polling', function(){
     assert(['websocket', 'polling'].indexOf(helpers.client.io.io.engine.transport.name) > -1);
   });

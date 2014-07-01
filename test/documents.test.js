@@ -1,9 +1,14 @@
 var assert = require('assert'),
   helpers = require('./helpers');
 
-describe.skip('Documents', function(){
+describe('Documents', function(){
   before(helpers.before);
-  after(helpers.after);
+  after(function(done){
+    helpers.client.destroyCollection('test.scopes', function(err){
+      if(err) return done(err);
+      helpers.after(done);
+    });
+  });
 
   var doc = {
     _id: Date.now(),
@@ -11,6 +16,18 @@ describe.skip('Documents', function(){
     project: 'mongoscope-client'
   };
 
+  it('should make us create the collection', function(done){
+    helpers.client.createDocument('test.scopes', doc, function(err, res, raw){
+      assert.equal(raw.status, 404);
+      done();
+    });
+  });
+  it('should allow us to make the collection', function(done){
+    helpers.client.createCollection('test.scopes', function(err, res, raw){
+      assert.equal(raw.status, 201);
+      done();
+    });
+  });
   it('should create a new one', function(done){
     helpers.client.createDocument('test.scopes', doc, function(err, res, raw){
       assert.ifError(err);
