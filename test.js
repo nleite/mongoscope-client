@@ -75,7 +75,7 @@ describe('Databases', function(){
     });
   });
   it('should create a new one', function(done){
-    client.createCollection('test_db', 'nodbwithoutacollection', function(err){
+    client.createCollection('test_db.nodbwithoutacollection', function(err){
       assert.ifError(err);
       done();
     });
@@ -94,7 +94,7 @@ describe.skip('Collections', function(){
   after(_after);
   describe('Features', function(){
     it('should support low-level find', function(done){
-      client.find('local', 'startup_log', function(err, res){
+      client.find('local.startup_log', function(err, res){
         assert.ifError(err);
 
         assert(Array.isArray(res));
@@ -103,7 +103,7 @@ describe.skip('Collections', function(){
       });
     });
     it('should support count', function(done){
-      client.count('local', 'startup_log', function(err, res){
+      client.count('local.startup_log', function(err, res){
         assert.ifError(err);
 
         assert(res.count > 0, 'count returned ' + JSON.stringify(res));
@@ -124,7 +124,7 @@ describe.skip('Collections', function(){
         }
       }];
 
-      client.aggregate('local', 'startup_log', pipeline, function(err, res){
+      client.aggregate('local.startup_log', pipeline, function(err, res){
         assert.ifError(err);
         assert(res.length > 1);
         done();
@@ -133,54 +133,54 @@ describe.skip('Collections', function(){
   });
   describe('CRUD', function(){
     before(function(done){
-      client.destroyCollection('test', 'original_name', function(){
+      client.destroyCollection('test.original_name', function(){
         done();
       });
     });
     it('should not allow invalid collection names', function(done){
-      client.createCollection('test', 'awe $ome collection times!', function(err, res){
+      client.createCollection('test.awe $ome collection times!', function(err, res){
         assert(err, 'Should be an error: ' + res.text);
         assert.equal(err.status, 400);
         done();
       });
     });
     it('should create a new one', function(done){
-      client.createCollection('test', 'original_name', function(err, res){
+      client.createCollection('test.original_name', function(err, res){
         assert.ifError(err);
         assert.equal(res.name, 'original_name');
         done();
       });
     });
     it('should conflict if trying to create again', function(done){
-      client.createCollection('test', 'original_name', function(err, res){
+      client.createCollection('test.original_name', function(err, res){
         assert(err, 'Should be an error: ' + res.text);
         assert.equal(err.status, 409);
         done();
       });
     });
     it('should rename it', function(done){
-      client.updateCollection('test', 'original_name', {name: 'renamed'}, function(err, res){
+      client.updateCollection('test.original_name', {name: 'renamed'}, function(err, res){
         assert.ifError(err);
         assert.equal(res.name, 'renamed');
         done();
       });
     });
     it('should now return a 404 for the original', function(done){
-      client.collection('test', 'original_name', function(err, res){
+      client.collection('test.original_name', function(err, res){
         assert(err, 'Should be an error: ' + res.text);
         assert.equal(err.status, 404, 'Got message: ' + err.message);
         done();
       });
     });
     it('should destroy one', function(done){
-      client.destroyCollection('test', 'renamed', function(err, res){
+      client.destroyCollection('test.renamed', function(err, res){
         assert.ifError(err);
         assert.equal(res.name, 'renamed');
         done();
       });
     });
     it('should 404 for the renamed collection', function(done){
-      client.collection('test', 'renamed', function(err, res){
+      client.collection('test.renamed', function(err, res){
         assert(err, 'Should be an error: ' + res.text);
         assert.equal(err.status, 404);
         done();
@@ -189,20 +189,26 @@ describe.skip('Collections', function(){
   });
   describe('Capped', function(){
     it('should not allow size AND max for capped collections', function(done){
-      client.createCollection('test', 'cappy', {capped: true, max: 1024, size: 100}, function(err, res){
+      var opts = {
+        capped: true,
+        max: 1024,
+        size: 100
+      };
+
+      client.createCollection('test.cappy', opts, function(err, res){
         assert(err, 'Should be an error: ' + res.text);
         assert.equal(err.status, 400);
         done();
       });
     });
     it('should create a capped collection', function(done){
-      client.createCollection('test', 'cappy', {capped: true, max: 10}, function(err){
+      client.createCollection('test.cappy', {capped: true, max: 10}, function(err){
         assert.ifError(err);
         done();
       });
     });
     it('should be marked as capped by max 10', function(done){
-      client.collection('test', 'cappy', function(err, res){
+      client.collection('test.cappy', function(err, res){
         assert.ifError(err);
         assert(res.features.capped);
         assert.equal(res.features.max, 10);
@@ -210,7 +216,7 @@ describe.skip('Collections', function(){
       });
     });
     after(function(done){
-      client.destroyCollection('test', 'cappy', function(){
+      client.destroyCollection('test.cappy', function(){
         done();
       });
     });
@@ -222,14 +228,14 @@ describe('Indexes', function(){
   before(_before);
   after(_after);
   it('should create a new index', function(done){
-    client.createIndex('local', 'startup_log', {hostname: 1}, function(err, res, raw){
+    client.createIndex('local.startup_log', {hostname: 1}, function(err, res, raw){
       assert.ifError(err);
       assert.equal(raw.status, 201);
       done();
     });
   });
   it('should update the name option', function(done){
-    client.updateIndex('local', 'startup_log', 'hostname_1', {name: 'hostname'}, function(err, res, raw){
+    client.updateIndex('local.startup_log', 'hostname_1', {name: 'hostname'}, function(err, res, raw){
       assert.ifError(err);
       assert.equal(raw.status, 200);
       assert.equal(res.name, 'hostname');
@@ -237,7 +243,7 @@ describe('Indexes', function(){
     });
   });
   it('should destroy one', function(done){
-    client.destroyIndex('local', 'startup_log', 'hostname', function(err, res, raw){
+    client.destroyIndex('local.startup_log', 'hostname', function(err, res, raw){
       assert.ifError(err);
       assert.equal(raw.status, 200);
       assert.equal(res.name, 'hostname');
@@ -245,7 +251,7 @@ describe('Indexes', function(){
     });
   });
   it('should now return a 404 for our old index', function(done){
-    client.index('local', 'startup_log', 'hostname', function(err){
+    client.index('local.startup_log', 'hostname', function(err){
       assert.equal(err.status, 404);
       done();
     });
@@ -264,7 +270,7 @@ describe.skip('Documents', function(){
   };
 
   it('should create a new one', function(done){
-    client.createDocument('test', 'scopes', doc, function(err, res, raw){
+    client.createDocument('test.scopes', doc, function(err, res, raw){
       assert.ifError(err);
       assert.equal(raw.status, 201);
       done();
@@ -272,7 +278,7 @@ describe.skip('Documents', function(){
   });
 
   it('should return details for one', function(done){
-    client.getDocument('test', 'scopes', doc._id, function(err, res){
+    client.getDocument('test.scopes', doc._id, function(err, res){
       assert.ifError(err);
       assert.deepEqual(res, doc);
       done();
@@ -280,7 +286,7 @@ describe.skip('Documents', function(){
   });
 
   it('should update one', function(done){
-    client.updateDocument('test', 'scopes', doc._id, {$inc: {updates: 1}}, function(err, res, raw){
+    client.updateDocument('test.scopes', doc._id, {$inc: {updates: 1}}, function(err, res, raw){
       assert.ifError(err);
       assert.equal(200, raw.status);
       done();
@@ -288,14 +294,14 @@ describe.skip('Documents', function(){
   });
 
   it('should destroy one', function(done){
-    client.destroyDocument('test', 'scopes', doc._id, function(err, res, raw){
+    client.destroyDocument('test.scopes', doc._id, function(err, res, raw){
       assert.ifError(err);
       assert.equal(raw.status, 200);
       done();
     });
   });
   it('should return a 404 for the old document', function(done){
-    client.getDocument('test', 'scopes', doc._id, function(err){
+    client.getDocument('test.scopes', doc._id, function(err){
       assert.equal(err.status, 404);
       done();
     });
@@ -359,7 +365,7 @@ describe('Streams', function(){
   before(_before);
   after(_after);
 
-  it('should have socketio connected', function(){
+  it.skip('should have socketio connected', function(){
     assert(client.io.connected);
   });
 
@@ -369,18 +375,18 @@ describe('Streams', function(){
 
   it('should not allow streaming count (for now)', function(){
     assert.throws(function(){
-      client.count('local', 'startup_log');
+      client.count('local.startup_log');
     }, new RegExp('not streamable'));
   });
 
   it('should have a working cursor', function(done){
     var seen = 0, expected;
-    client.count('local', 'startup_log', function(err, res){
+    client.count('local.startup_log', function(err, res){
       assert.ifError(err);
       expected = res.count;
 
       debug('should get back ' + expected + ' docs if cursor exhausted');
-      client.find('local', 'startup_log')
+      client.find('local.startup_log')
         .on('error', function(err){
           console.error(err);
           done(err);
@@ -394,14 +400,14 @@ describe('Streams', function(){
         });
     });
   });
-  it('should allow streaming top #slow', function(done){
+  it.skip('should allow streaming top #slow', function(done){
     client.top({interval: 10})
       .on('error', done)
       .on('data', function(data){
         debug('checking top sample', data);
 
         assert(Array.isArray(data.namespaces));
-        assert(typeof data.deltas === 'object');
+        assert.equal(Object.prototype.toString.call(data.deltas), '[object Object]');
 
         done();
       });
@@ -517,7 +523,7 @@ describe('Prototypes', function(){
   });
 
   it('should return a unique sample of the collection', function(done){
-    client.sample('local', 'startup_log', {size: 5}, function(err, res){
+    client.sample('local.startup_log', {size: 5}, function(err, res){
       assert.ifError(err);
 
       var set = {},
@@ -531,7 +537,7 @@ describe('Prototypes', function(){
   });
 
   it('should return a random document', function(done){
-    client.random('local', 'startup_log', function(err, res){
+    client.random('local.startup_log', function(err, res){
       assert.ifError(err);
       assert(!Array.isArray(res));
       assert(res._id);
