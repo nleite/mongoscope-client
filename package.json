@@ -16,8 +16,8 @@
   "scripts": {
     "start": "gulp serve",
     "dist": "gulp dist",
-    "test": "zuul --local 8080 -- test.js",
-    "ci": "zuul -- test.js"
+    "test": "zuul --local 8080 -- test/*.test.js",
+    "ci": "zuul -- test/*.test.js"
   },
   "dependencies": {
     "debug": "^0.8.1",
